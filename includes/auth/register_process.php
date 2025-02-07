@@ -1,6 +1,7 @@
 <?php
 require_once '../../config/config.php';
 require_once '../../config/database.php';
+require_once '../mail/Mailer.php';
 
 session_start();
 
@@ -69,6 +70,12 @@ try {
     // Gerar código de verificação
     $verification_code = generateVerificationCode();
 
+    // Enviar e-mail de verificação
+    $mailer = new Mailer();
+    if (!$mailer->sendVerificationEmail($email, $verification_code)) {
+        jsonResponse(false, 'Erro ao enviar e-mail de verificação. Tente novamente mais tarde.');
+    }
+
     // Inserir usuário
     $stmt = $db->prepare("
         INSERT INTO users (full_name, birth_date, email, phone, whatsapp, password, state, city, verification_code)
@@ -86,9 +93,6 @@ try {
         $city,
         $verification_code
     ]);
-
-    // Enviar e-mail de verificação (implementar depois)
-    // sendVerificationEmail($email, $verification_code);
 
     $_SESSION['verification_email'] = $email;
     jsonResponse(true, 'Cadastro realizado com sucesso! Por favor, verifique seu e-mail.');
