@@ -43,14 +43,14 @@ function isAuthenticated() {
 
 function redirectIfNotAuthenticated() {
     if (!isAuthenticated()) {
-        header('Location: /views/auth/login.php');
+        header('Location: teste-webbrain/views/auth/login.php');
         exit;
     }
 }
 
 function redirectIfAuthenticated() {
     if (isAuthenticated()) {
-        header('Location: /index.php');
+        header('Location: teste-webbrain/index.php');
         exit;
     }
 }
