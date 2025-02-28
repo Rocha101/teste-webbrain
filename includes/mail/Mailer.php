@@ -1,5 +1,6 @@
 <?php
 use Resend\Client;
+require __DIR__ . '/vendor/autoload.php';
 
 class Mailer {
     private $resend;
