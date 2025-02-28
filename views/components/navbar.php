@@ -13,20 +13,20 @@ if (!isset($_SESSION)) {
             <ul class="navbar-nav ms-auto">
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <li class="nav-item">
-                        <a class="nav-link" href="/views/tickets/new.php">Novo Chamado</a>
+                        <a class="nav-link" href="new.php">Novo Chamado</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/views/tickets/list.php">Meus Chamados</a>
+                        <a class="nav-link" href="list.php">Meus Chamados</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/views/auth/logout.php">Sair</a>
+                        <a class="nav-link" href="logout.php">Sair</a>
                     </li>
                 <?php else: ?>
                     <li class="nav-item">
-                        <a class="nav-link" href="/views/auth/login.php">Login</a>
+                        <a class="nav-link" href="login.php">Login</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/views/auth/register.php">Cadastro</a>
+                        <a class="nav-link" href="register.php">Cadastro</a>
                     </li>
                 <?php endif; ?>
             </ul>
