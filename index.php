@@ -58,7 +58,7 @@ session_start();
 
                         <div class="row g-4">
                             <div class="col-md-6">
-                                <div class="card h-100 bg-light border-0">
+                                <div class="h-100 bg-light border-0">
                                     <div class="card-body">
                                         <h4 class="card-title text-primary mb-3">
                                             <i class="fas fa-info-circle me-2"></i>Como Funciona?
@@ -75,7 +75,7 @@ session_start();
                             </div>
 
                             <div class="col-md-6">
-                                <div class="card h-100 bg-light border-0">
+                                <div class="h-100 bg-light border-0">
                                     <div class="card-body">
                                         <h4 class="card-title text-primary mb-3">
                                             <i class="fas fa-ticket-alt me-2"></i>Tipos de Chamados
