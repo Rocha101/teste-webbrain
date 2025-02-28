@@ -5,7 +5,7 @@ if (!isset($_SESSION)) {
 ?>
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container">
-        <a class="navbar-brand" href="/index.php">Sistema de Chamados TI</a>
+        <a class="navbar-brand" href="index.php">Sistema de Chamados TI</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
