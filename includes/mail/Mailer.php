@@ -1,34 +1,15 @@
 <?php
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
-use PHPMailer\PHPMailer\Exception;
+use Resend\Client;
 
 class Mailer {
-    private $mail;
+    private $resend;
 
     public function __construct() {
-        $this->mail = new PHPMailer(true);
-
-        // Configurações do servidor
-        $this->mail->isSMTP();
-        $this->mail->Host = 'live.smtp.mailtrap.io'; // Altere para seu servidor SMTP
-        $this->mail->SMTPAuth = true;
-        $this->mail->Username = 'smtp@mailtrap.io'; // Altere para seu email
-        $this->mail->Password = '252cb9840cd8fcceed53548e7ed8817f'; // Altere para sua senha de aplicativo
-        $this->mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $this->mail->Port = 587;
-        $this->mail->CharSet = 'UTF-8';
-
-        // Remetente
-        $this->mail->setFrom('smtp@mailtrap.io', 'Sistema de Chamados TI'); // Altere para seu email
+        $this->resend = Resend::client('re_b5AWjYqU_B2XiAkg4iRkNodBvaJANw6zn'); // Replace with your actual API key
     }
 
     public function sendVerificationEmail($to, $code) {
         try {
-            $this->mail->addAddress($to);
-            $this->mail->isHTML(true);
-            $this->mail->Subject = 'Verificação de E-mail - Sistema de Chamados TI';
-            
             // Template do e-mail
             $body = "
             <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
@@ -47,24 +28,23 @@ class Mailer {
             </div>
             ";
 
-            $this->mail->Body = $body;
-            $this->mail->AltBody = "Seu código de verificação é: {$code}";
+            $this->resend->emails->send([
+                'from' => 'Sistema de Chamados TI',
+                'to' => $to,
+                'subject' => 'Verificação de E-mail - Sistema de Chamados TI',
+                'html' => $body,
+                'text' => "Seu código de verificação é: {$code}"
+            ]);
 
-            $this->mail->send();
             return true;
         } catch (Exception $e) {
-            error_log("Erro ao enviar e-mail: {$this->mail->ErrorInfo}");
+            error_log("Erro ao enviar e-mail: {$e->getMessage()}");
             return false;
         }
     }
 
     public function sendTicketNotification($to, $ticketId, $status) {
         try {
-            $this->mail->addAddress($to);
-            $this->mail->isHTML(true);
-            $this->mail->Subject = "Atualização do Chamado #{$ticketId} - Sistema de Chamados TI";
-            
-            // Template do e-mail
             $body = "
             <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
                 <h2 style='color: #0d6efd;'>Atualização de Chamado</h2>
@@ -84,13 +64,17 @@ class Mailer {
             </div>
             ";
 
-            $this->mail->Body = $body;
-            $this->mail->AltBody = "Seu chamado #{$ticketId} foi atualizado para o status: {$status}";
+            $this->resend->emails->send([
+                'from' => 'Sistema de Chamados TI',
+                'to' => $to,
+                'subject' => "Atualização do Chamado #{$ticketId} - Sistema de Chamados TI",
+                'html' => $body,
+                'text' => "Seu chamado #{$ticketId} foi atualizado para o status: {$status}"
+            ]);
 
-            $this->mail->send();
             return true;
         } catch (Exception $e) {
-            error_log("Erro ao enviar e-mail: {$this->mail->ErrorInfo}");
+            error_log("Erro ao enviar e-mail: {$e->getMessage()}");
             return false;
         }
     }
