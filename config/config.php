@@ -58,11 +58,14 @@ function redirectIfAuthenticated() {
 // Função para criar resposta JSON
 function jsonResponse($success, $message, $data = null) {
     header('Content-Type: application/json');
-    echo json_encode([
+    $response = [
         'success' => $success,
-        'message' => $message,
-        'data' => $data
-    ]);
+        'message' => $message
+    ];
+    if ($data !== null) {
+        $response['data'] = $data;
+    }
+    echo json_encode($response);
     exit;
 }
 

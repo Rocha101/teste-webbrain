@@ -1,6 +1,5 @@
 {
     "require": {
-        "phpmailer/phpmailer": "^6.8",
         "resend/resend-php": "^0.15.1"
     },
     "autoload": {

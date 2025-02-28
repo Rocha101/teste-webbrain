@@ -19,7 +19,7 @@ Sistema de gerenciamento de chamados de TI desenvolvido para a Prefeitura, permi
 
 1. Clone este repositório para a pasta htdocs do XAMPP:
 ```bash
-git clone [url-do-repositorio] chamados-ti
+git clone [url-do-repositorio] teste-webbrain
 ```
 
 2. Importe o arquivo database.sql no phpMyAdmin para criar o banco de dados
@@ -28,7 +28,7 @@ git clone [url-do-repositorio] chamados-ti
 
 4. Acesse o sistema através do navegador:
 ```
-http://localhost/chamados-ti
+http://localhost/teste-webbrain/index.php
 ```
 
 ## Funcionalidades

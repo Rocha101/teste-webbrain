@@ -1,4 +1,5 @@
 <?php
+// Iniciar a sessão
 session_start();
 
 // Destruir todas as variáveis de sessão
@@ -13,6 +14,5 @@ if (isset($_COOKIE[session_name()])) {
 session_destroy();
 
 // Redirecionar para a página inicial
-header('Location: /index.php');
+header('Location: /teste-webbrain/index.php');
 exit;
-?>

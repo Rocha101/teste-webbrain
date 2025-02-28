@@ -48,7 +48,7 @@ try {
     $stmt->execute([$verification_code, $user['id']]);
 
     // Enviar novo e-mail (implementar depois)
-    // sendVerificationEmail($email, $verification_code);
+    sendVerificationEmail($email, $verification_code);
 
     jsonResponse(true, 'Novo código de verificação enviado com sucesso!');
 
