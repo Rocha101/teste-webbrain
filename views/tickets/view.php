@@ -16,7 +16,6 @@ try {
     $database = new Database();
     $db = $database->getConnection();
 
-    // Buscar dados do chamado
     $stmt = $db->prepare("
         SELECT t.*, u.full_name as user_name
         FROM tickets t
@@ -31,26 +30,14 @@ try {
         exit;
     }
 
-    // Buscar contatos
-    $stmt = $db->prepare("
-        SELECT * FROM ticket_contacts
-        WHERE ticket_id = ?
-        ORDER BY id ASC
-    ");
+    $stmt = $db->prepare("SELECT * FROM ticket_contacts WHERE ticket_id = ? ORDER BY id ASC");
     $stmt->execute([$ticket_id]);
     $contacts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Buscar anexos
-    $stmt = $db->prepare("
-        SELECT id, file_name, mime_type, created_at
-        FROM attachments
-        WHERE ticket_id = ?
-        ORDER BY created_at ASC
-    ");
+    $stmt = $db->prepare("SELECT id, file_name, mime_type, created_at FROM attachments WHERE ticket_id = ? ORDER BY created_at ASC");
     $stmt->execute([$ticket_id]);
     $attachments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Buscar timeline
     $stmt = $db->prepare("
         SELECT t.*, u.full_name as user_name
         FROM ticket_timeline t
@@ -71,103 +58,218 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizar Chamado #<?php echo $ticket_id; ?> - Sistema de Chamados</title>
+    <title>Chamado #<?php echo $ticket_id; ?> - Sistema de Chamados</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
-    <link href="../../assets/css/style.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        html,
-        body {
-            height: 100%;
+        :root {
+            --primary: #4e73df;
+            --secondary: #858796;
+            --success: #1cc88a;
+            --warning: #f6c23e;
+            --danger: #e74a3b;
+            --light: #f8f9fc;
+            --dark: #5a5c69;
         }
 
         body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
-            background-color: #f8f9fa;
         }
 
         .content-wrapper {
-            flex: 1 0 auto;
-            padding-bottom: 2rem;
-        }
-
-        footer {
-            flex-shrink: 0;
+            flex: 1;
+            padding: 2rem 1rem;
         }
 
         .card {
             border: none;
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-            border-radius: 0.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        h2.card-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        h5 {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--dark);
+            margin-bottom: 1rem;
+        }
+
+        .badge {
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .bg-light {
+            background-color: #fff;
+            border: 1px solid #e3e6f0;
+            border-radius: 8px;
         }
 
         .attachment-item {
-            transition: all 0.2s ease-in-out;
-            border: 1px solid rgba(0, 0, 0, .125);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background-color: #fff;
+            border: 1px solid #e3e6f0;
         }
 
-        .attachment-item:hover {
-            background-color: #f8f9fa;
+        .btn-primary {
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
         }
 
-        .attachment-item .btn-outline-primary {
-            opacity: 0.7;
-            transition: all 0.2s ease-in-out;
+        .btn-outline-primary {
+            border-radius: 20px;
+            padding: 0.3rem 1rem;
         }
 
-        .attachment-item:hover .btn-outline-primary {
-            opacity: 1;
+        .form-label {
+            font-weight: 500;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
         }
 
-        .list-group {
-            overflow: hidden;
+        .form-control {
+            border-radius: 8px;
+            border: 1px solid #e3e6f0;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+        }
+
+        .form-text {
+            color: var(--secondary);
+            font-size: 0.9rem;
+        }
+
+        .list-group-item {
+            border: 1px solid #e3e6f0;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            padding: 0.75rem 1rem;
+        }
+
+        .btn-outline-danger {
+            color: var(--danger);
+            border-color: var(--danger);
+            border-radius: 8px;
+            padding: 0.3rem 0.8rem;
+        }
+
+        /* Timeline Styles */
+        .timeline {
+            position: relative;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .timeline-content {
+            background-color: #fff;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #e3e6f0;
+        }
+
+        footer {
+            background-color: var(--dark);
+            color: #fff;
+            padding: 1.5rem 0;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .content-wrapper {
+                padding: 1rem;
+            }
+
+            .card-body {
+                padding: 1.5rem;
+            }
+
+            h2.card-title {
+                font-size: 1.5rem;
+            }
+
+            h5 {
+                font-size: 1.1rem;
+            }
+
+            .timeline {
+                padding-left: 1.5rem;
+            }
+
+            .timeline::before {
+                left: 0.35rem;
+            }
+
+            .timeline-marker {
+                left: 0.1rem;
+            }
+
+            .timeline-content {
+                margin-left: 1rem;
+            }
         }
     </style>
 </head>
 
 <body>
-    <div class="content-wrapper">
-        <?php include '../components/navbar.php'; ?>
+    <?php include '../components/navbar.php'; ?>
 
-        <div class="container my-5">
+    <div class="content-wrapper">
+        <div class="container">
             <?php if (isset($error)): ?>
                 <div class="alert alert-danger shadow-sm" role="alert">
                     <i class="fas fa-exclamation-circle me-2"></i><?php echo $error; ?>
                 </div>
             <?php else: ?>
-                <div class="row">
+                <div class="row g-4">
                     <!-- Detalhes do Chamado -->
-                    <div class="col-md-8">
-                        <div class="card mb-4">
-                            <div class="card-body p-4">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center mb-4">
                                     <div>
-                                        <h2 class="card-title mb-0">
-                                            <i class="fas fa-ticket-alt text-primary me-2"></i>
-                                            Chamado #<?php echo $ticket_id; ?>
+                                        <h2 class="card-title">
+                                            <i class="fas fa-ticket-alt me-2"></i>Chamado #<?php echo $ticket_id; ?>
                                         </h2>
                                         <small class="text-muted">
                                             Aberto por <?php echo htmlspecialchars($ticket['user_name']); ?>
                                             em <?php echo date('d/m/Y H:i', strtotime($ticket['created_at'])); ?>
                                         </small>
                                     </div>
-                                    <span class="badge bg-<?php echo $ticket['status'] === 'aberto' ? 'success' : ($ticket['status'] === 'em_andamento' ? 'warning' : 'secondary'); ?> p-2">
-                                        <i class="fas fa-<?php echo $ticket['status'] === 'aberto' ? 'door-open' : ($ticket['status'] === 'em_andamento' ? 'sync' : 'door-closed'); ?> me-1"></i>
-                                        <?php
-                                        echo $ticket['status'] === 'aberto' ? 'Aberto' : ($ticket['status'] === 'em_andamento' ? 'Em Andamento' : 'Fechado');
-                                        ?>
+                                    <span class="badge <?php echo $ticket['status'] === 'aberto' ? 'bg-success' : ($ticket['status'] === 'em_andamento' ? 'bg-warning' : 'bg-secondary'); ?>">
+                                        <?php echo $ticket['status'] === 'aberto' ? 'Aberto' : ($ticket['status'] === 'em_andamento' ? 'Em Andamento' : 'Fechado'); ?>
                                     </span>
                                 </div>
 
-                                <!-- [Rest of the content sections with improved styling] -->
                                 <div class="mb-4">
-                                    <h5 class="text-primary">
-                                        <i class="fas fa-tag me-2"></i>Tipo de Incidente
-                                    </h5>
-                                    <p class="bg-light p-3 rounded">
+                                    <h5><i class="fas fa-tag me-2"></i>Tipo de Incidente</h5>
+                                    <p class="bg-light p-3">
                                         <?php
                                         $types = [
                                             'hardware' => ['icon' => 'desktop', 'label' => 'Hardware'],
@@ -184,177 +286,120 @@ try {
                                     </p>
                                 </div>
 
-                                <div>
-                                    <h5 class="text-primary">
-                                        <i class="fas fa-info-circle me-2"></i>Descrição
-                                    </h5>
-                                    <div class="bg-light p-3 rounded">
-                                        <?php echo $ticket['description']; ?>
-                                    </div>
+                                <div class="mb-4">
+                                    <h5><i class="fas fa-info-circle me-2"></i>Descrição</h5>
+                                    <div class="bg-light p-3"><?php echo $ticket['description']; ?></div>
                                 </div>
 
-                                <div class="mt-4">
-                                    <h5 class="text-primary">
-                                        <i class="fas fa-user-friends me-2"></i>Contatos
-                                    </h5>
+                                <div class="mb-4">
+                                    <h5><i class="fas fa-user-friends me-2"></i>Contatos</h5>
                                     <?php if (!empty($contacts)): ?>
-                                        <ul class="list-group list-group-flush">
+                                        <ul class="list-group">
                                             <?php foreach ($contacts as $contact): ?>
-                                                <li class="list-group-item">
-                                                    <div class="d-flex flex-column flex-md-row align-items-md-center">
-                                                        <i class="fas fa-user me-2"></i>
-                                                        <div class="flex-grow-1">
+                                                <li class="list-group-item bg-light p-3">
+                                                    <div class="d-flex flex-column">
+                                                        <div>
+                                                            <i class="fas fa-user me-2"></i>
                                                             <strong><?php echo htmlspecialchars($contact['contact_name'] ?? ''); ?></strong>
-                                                            <span class="text-muted ms-md-2">
-                                                                <?php echo htmlspecialchars($contact['contact_phone'] ?? ''); ?>
-                                                            </span>
+                                                            <span class="text-muted ms-2"><?php echo htmlspecialchars($contact['contact_phone'] ?? ''); ?></span>
                                                         </div>
-                                                    </div>
-                                                    <!-- Observation -->
-                                                    <?php if (!empty($contact['observation'])): ?>
-                                                        <div class="mt-2">
-                                                            <small class="text-muted">
-                                                                <i class="fas fa-comment me-1"></i>
-                                                                <?php echo htmlspecialchars($contact['observation']); ?>
+                                                        <?php if (!empty($contact['observation'])): ?>
+                                                            <small class="text-muted mt-1">
+                                                                <i class="fas fa-comment me-1"></i><?php echo htmlspecialchars($contact['observation']); ?>
                                                             </small>
-                                                        </div>
-                                                    <?php endif; ?>
+                                                        <?php endif; ?>
+                                                    </div>
                                                 </li>
                                             <?php endforeach; ?>
                                         </ul>
                                     <?php else: ?>
-                                        <div class="alert alert-info">
-                                            <i class="fas fa-info-circle me-2"></i>
-                                            Nenhum contato disponível para este chamado.
-                                        </div>
+                                        <div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>Nenhum contato disponível.</div>
                                     <?php endif; ?>
                                 </div>
 
-
-                                <!-- Anexos -->
                                 <div class="mb-4">
-                                    <h5 class="text-primary">
-                                        <i class="fas fa-paperclip me-2"></i>Anexos
-                                    </h5>
+                                    <h5><i class="fas fa-paperclip me-2"></i>Anexos</h5>
                                     <?php if (!empty($attachments)): ?>
-                                        <div class="list-group">
-                                            <?php foreach ($attachments as $attachment): ?>
-                                                <div class="attachment-item list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3">
+                                        <?php foreach ($attachments as $attachment): ?>
+                                            <div class="attachment-item">
+                                                <div class="d-flex justify-content-between align-items-center">
                                                     <div class="d-flex align-items-center">
                                                         <?php
-                                                        // Define icons based on mime type
                                                         $icon = 'file';
-                                                        if (strpos($attachment['mime_type'], 'image') !== false) {
-                                                            $icon = 'image';
-                                                        } elseif (strpos($attachment['mime_type'], 'pdf') !== false) {
-                                                            $icon = 'file-pdf';
-                                                        } elseif (
-                                                            strpos($attachment['mime_type'], 'word') !== false ||
-                                                            strpos($attachment['mime_type'], 'document') !== false
-                                                        ) {
-                                                            $icon = 'file-word';
-                                                        } elseif (strpos($attachment['mime_type'], 'text') !== false) {
-                                                            $icon = 'file-alt';
-                                                        }
+                                                        if (strpos($attachment['mime_type'], 'image') !== false) $icon = 'image';
+                                                        elseif (strpos($attachment['mime_type'], 'pdf') !== false) $icon = 'file-pdf';
+                                                        elseif (strpos($attachment['mime_type'], 'word') !== false || strpos($attachment['mime_type'], 'document') !== false) $icon = 'file-word';
+                                                        elseif (strpos($attachment['mime_type'], 'text') !== false) $icon = 'file-alt';
                                                         ?>
                                                         <i class="fas fa-<?php echo $icon; ?> fa-lg text-primary me-3"></i>
                                                         <div>
-                                                            <div class="fw-semibold"><?php echo htmlspecialchars($attachment['file_name']); ?></div>
-                                                            <small class="text-muted">
-                                                                <i class="fas fa-clock me-1"></i>
-                                                                <?php echo date('d/m/Y H:i', strtotime($attachment['created_at'])); ?>
-                                                            </small>
+                                                            <div><?php echo htmlspecialchars($attachment['file_name']); ?></div>
+                                                            <small class="text-muted"><?php echo date('d/m/Y H:i', strtotime($attachment['created_at'])); ?></small>
                                                         </div>
                                                     </div>
-                                                    <a href="download.php?id=<?php echo $attachment['id']; ?>"
-                                                        class="btn btn-sm btn-outline-primary"
-                                                        title="Baixar arquivo">
+                                                    <a href="download.php?id=<?php echo $attachment['id']; ?>" class="btn btn-outline-primary">
                                                         <i class="fas fa-download"></i>
                                                     </a>
                                                 </div>
-                                            <?php endforeach; ?>
-                                        </div>
+                                            </div>
+                                        <?php endforeach; ?>
                                     <?php else: ?>
-                                        <div class="alert alert-info">
-                                            <i class="fas fa-info-circle me-2"></i>
-                                            Nenhum anexo disponível para este chamado.
-                                        </div>
+                                        <div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>Nenhum anexo disponível.</div>
                                     <?php endif; ?>
                                 </div>
 
-                                <!-- Formulário para nova atualização -->
-                                <div class="mb-4">
-                                    <h5 class="text-primary">
-                                        <i class="fas fa-plus-circle me-2"></i>Adicionar Atualização
-                                    </h5>
-                                    <form id="updateForm" class="bg-light p-4 rounded">
+                                <div>
+                                    <h5><i class="fas fa-plus-circle me-2"></i>Adicionar Atualização</h5>
+                                    <form id="updateForm" class="bg-light p-3 rounded">
                                         <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
                                         <input type="hidden" name="ticket_id" value="<?php echo $ticket_id; ?>">
-
                                         <div class="mb-3">
-                                            <textarea id="update_description" name="description"
-                                                class="form-control" rows="3" required></textarea>
+                                            <textarea id="update_description" name="description" class="form-control" rows="3" required></textarea>
                                         </div>
-
-                                        <div class="mb-3">
+                                        <div class="mb-4">
                                             <label class="form-label">
-                                                <i class="fas fa-paperclip me-2"></i>Anexos Adicionais
+                                                <i class="fas fa-paperclip me-2"></i>Anexos
                                             </label>
-                                            <input type="file" class="form-control" name="attachments[]"
-                                                multiple accept="image/*,.pdf,.doc,.docx,.txt">
+                                            <div class="mb-3">
+                                                <input type="file" class="form-control" id="attachmentInput" name="attachments[]"
+                                                    multiple accept="image/*,.pdf,.doc,.docx,.txt">
+                                                <div class="form-text">
+                                                    <i class="fas fa-info-circle me-1"></i>
+                                                    Você pode selecionar múltiplos arquivos de uma vez.
+                                                </div>
+                                            </div>
+                                            <div id="attachmentList" class="list-group mb-3" style="display: none;"></div>
                                         </div>
-
-                                        <button type="submit" class="btn btn-primary">
-                                            <i class="fas fa-save me-2"></i>Adicionar Atualização
-                                        </button>
+                                        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Adicionar</button>
                                     </form>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Timeline with improved styling -->
-                    <div class="col-md-4">
+                    <!-- Timeline -->
+                    <div class="col-lg-4">
                         <div class="card">
-                            <div class="card-body p-4">
-                                <h5 class="card-title text-primary mb-4">
-                                    <i class="fas fa-history me-2"></i>Timeline
-                                </h5>
+                            <div class="card-body">
+                                <h5><i class="fas fa-history me-2"></i>Timeline</h5>
                                 <div class="timeline">
                                     <?php foreach ($timeline as $entry): ?>
                                         <div class="timeline-item">
-                                            <div class="timeline-marker"></div>
                                             <div class="timeline-content">
-                                                <div class="timeline-header mb-2">
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <div class="user-info">
-                                                            <strong class="d-block">
-                                                                <i class="fas fa-user-circle me-2 text-primary"></i>
-                                                                <?php echo htmlspecialchars($entry['user_name']); ?>
-                                                            </strong>
-                                                            <small class="text-muted">
-                                                                <i class="fas fa-clock me-1"></i>
-                                                                <?php echo date('d/m/Y H:i', strtotime($entry['created_at'])); ?>
-                                                            </small>
-                                                        </div>
-                                                        <?php if ($entry['action'] === 'created'): ?>
-                                                            <span class="badge bg-success-subtle text-success">
-                                                                <i class="fas fa-plus-circle me-1"></i>Novo
-                                                            </span>
-                                                        <?php endif; ?>
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <div>
+                                                        <strong><?php echo htmlspecialchars($entry['user_name']); ?></strong>
+                                                        <small class="text-muted d-block"><?php echo date('d/m/Y H:i', strtotime($entry['created_at'])); ?></small>
                                                     </div>
-                                                </div>
-                                                <div class="timeline-body">
                                                     <?php if ($entry['action'] === 'created'): ?>
-                                                        <p class="mb-0 text-success">
-                                                            <i class="fas fa-ticket-alt me-2"></i>Abriu o chamado
-                                                        </p>
-                                                    <?php else: ?>
-                                                        <div class="bg-light rounded p-3">
-                                                            <?php echo $entry['description']; ?>
-                                                        </div>
+                                                        <span class="badge bg-success">Novo</span>
                                                     <?php endif; ?>
                                                 </div>
+                                                <?php if ($entry['action'] === 'created'): ?>
+                                                    <p class="text-success"><i class="fas fa-ticket-alt me-2"></i>Abriu o chamado</p>
+                                                <?php else: ?>
+                                                    <div><?php echo $entry['description']; ?></div>
+                                                <?php endif; ?>
                                             </div>
                                         </div>
                                     <?php endforeach; ?>
@@ -367,16 +412,8 @@ try {
         </div>
     </div>
 
-    <footer class="bg-dark text-light py-4">
-        <div class="container text-center">
-            <p class="mb-0">
-                <i class="far fa-copyright me-1"></i> <?php echo date('Y'); ?>
-                Sistema de Chamados TI - Todos os direitos reservados.
-            </p>
-        </div>
-    </footer>
+    <?php include '../components/footer.php'; ?>
 
-    <!-- [Scripts section remains largely the same, with added loading states] -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
@@ -385,21 +422,49 @@ try {
             $('#update_description').summernote({
                 height: 100,
                 toolbar: [
-                    ['style', ['bold', 'italic', 'underline', 'clear']],
-                    ['font', ['strikethrough']],
-                    ['para', ['ul', 'ol']],
-                    ['insert', ['link']],
+                    ['style', ['bold', 'italic', 'underline']],
+                    ['para', ['ul', 'ol']]
                 ],
-                placeholder: 'Digite sua atualização aqui...'
+                placeholder: 'Digite sua atualização...'
+            });
+
+            $('#attachmentInput').on('change', function(e) {
+                const files = e.target.files;
+                const $attachmentList = $('#attachmentList');
+                $attachmentList.empty();
+                if (files.length > 0) {
+                    $attachmentList.show();
+                    $.each(files, function(index, file) {
+                        const fileItem = `
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-file me-2"></i>${file.name} (${(file.size / 1024).toFixed(2)} KB)</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger remove-attachment" data-index="${index}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        `;
+                        $attachmentList.append(fileItem);
+                    });
+                } else {
+                    $attachmentList.hide();
+                }
+            });
+
+            $(document).on('click', '.remove-attachment', function() {
+                const index = $(this).data('index');
+                const input = document.getElementById('attachmentInput');
+                const files = Array.from(input.files);
+                files.splice(index, 1);
+                const dataTransfer = new DataTransfer();
+                files.forEach(file => dataTransfer.items.add(file));
+                input.files = dataTransfer.files;
+                $(input).trigger('change');
             });
 
             $('#updateForm').on('submit', function(e) {
                 e.preventDefault();
-
                 const submitBtn = $(this).find('button[type="submit"]');
-                const originalText = submitBtn.html();
-                submitBtn.html('<span class="spinner-border spinner-border-sm me-2"></span>Processando...');
-                submitBtn.prop('disabled', true);
+                submitBtn.html('<span class="spinner-border spinner-border-sm me-2"></span>Processando...').prop('disabled', true);
 
                 const formData = new FormData(this);
                 formData.append('description', $('#update_description').summernote('code'));
@@ -411,18 +476,13 @@ try {
                     processData: false,
                     contentType: false,
                     success: function(response) {
-                        if (response.success) {
-                            location.reload();
-                        } else {
-                            alert(response.message);
-                            submitBtn.html(originalText);
-                            submitBtn.prop('disabled', false);
-                        }
+                        if (response.success) location.reload();
+                        else alert(response.message);
+                        submitBtn.html('<i class="fas fa-save me-2"></i>Adicionar').prop('disabled', false);
                     },
                     error: function() {
-                        alert('Erro ao processar a requisição. Tente novamente.');
-                        submitBtn.html(originalText);
-                        submitBtn.prop('disabled', false);
+                        alert('Erro ao processar a requisição.');
+                        submitBtn.html('<i class="fas fa-save me-2"></i>Adicionar').prop('disabled', false);
                     }
                 });
             });

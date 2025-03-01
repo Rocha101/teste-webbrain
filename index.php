@@ -8,95 +8,156 @@ session_start();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Chamados - Prefeitura</title>
-
-    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link href="assets/css/style.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4e73df;
+            --secondary: #858796;
+            --success: #1cc88a;
+            --warning: #f6c23e;
+            --danger: #e74a3b;
+            --light: #f8f9fc;
+            --dark: #5a5c69;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem 1rem;
+        }
+
+        /* Card Styles */
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        h2.card-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        h4 {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .bg-light {
+            background-color: #fff;
+            border: 1px solid #e3e6f0;
+            border-radius: 8px;
+        }
+
+        .list-unstyled li {
+            font-size: 1rem;
+            color: var(--dark);
+            margin-bottom: 0.75rem;
+        }
+
+        .btn-primary,
+        .btn-outline-primary {
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+        }
+
+        footer {
+            background-color: var(--dark);
+            color: #fff;
+            padding: 1.5rem 0;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            main {
+                padding: 1rem;
+            }
+
+            .card-body {
+                padding: 1.5rem;
+            }
+
+            h2.card-title {
+                font-size: 1.5rem;
+            }
+
+            h4 {
+                font-size: 1.1rem;
+            }
+
+            .btn-primary,
+            .btn-outline-primary {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
 </head>
 
-<body class="bg-light">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="#"><i class="fas fa-headset me-2"></i>Sistema de Chamados TI</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <?php if (isset($_SESSION['user_id'])): ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="views/tickets/new.php"><i class="fas fa-plus-circle me-1"></i> Novo Chamado</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="views/tickets/list.php"><i class="fas fa-list me-1"></i> Meus Chamados</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="views/auth/logout.php"><i class="fas fa-sign-out-alt me-1"></i> Sair</a>
-                        </li>
-                    <?php else: ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="views/auth/login.php"><i class="fas fa-sign-in-alt me-1"></i> Login</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="views/auth/register.php"><i class="fas fa-user-plus me-1"></i> Cadastro</a>
-                        </li>
-                    <?php endif; ?>
-                </ul>
-            </div>
-        </div>
-    </nav>
+<body>
+    <?php include 'views\components\navbar.php'; ?>
 
-    <main class="container my-5">
+    <main class="container">
         <div class="row justify-content-center">
             <div class="col-md-8">
-                <div class="card shadow-lg border-0 rounded-lg">
-                    <div class="card-body p-5">
-                        <h2 class="card-title text-center mb-4 text-primary fw-bold">Bem-vindo ao Sistema de Chamados de TI</h2>
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title text-center mb-4">Bem-vindo ao Sistema de Chamados de TI</h2>
 
                         <div class="row g-4">
                             <div class="col-md-6">
-                                <div class="h-100 bg-light border-0">
-                                    <div class="card-body">
-                                        <h4 class="card-title text-primary mb-3">
-                                            <i class="fas fa-info-circle me-2"></i>Como Funciona?
-                                        </h4>
-                                        <ul class="list-unstyled">
-                                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Registre-se com seus dados</li>
-                                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Faça login no sistema</li>
-                                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Abra um novo chamado</li>
-                                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Acompanhe o status</li>
-                                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Receba atualizações</li>
-                                        </ul>
-                                    </div>
+                                <div class="bg-light p-3 h-100">
+                                    <h4 class="mb-3">
+                                        <i class="fas fa-info-circle me-2 text-primary"></i>Como Funciona?
+                                    </h4>
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check-circle text-success me-2"></i>Registre-se com seus dados</li>
+                                        <li><i class="fas fa-check-circle text-success me-2"></i>Faça login no sistema</li>
+                                        <li><i class="fas fa-check-circle text-success me-2"></i>Abra um novo chamado</li>
+                                        <li><i class="fas fa-check-circle text-success me-2"></i>Acompanhe o status</li>
+                                        <li><i class="fas fa-check-circle text-success me-2"></i>Receba atualizações</li>
+                                    </ul>
                                 </div>
                             </div>
 
                             <div class="col-md-6">
-                                <div class="h-100 bg-light border-0">
-                                    <div class="card-body">
-                                        <h4 class="card-title text-primary mb-3">
-                                            <i class="fas fa-ticket-alt me-2"></i>Tipos de Chamados
-                                        </h4>
-                                        <ul class="list-unstyled">
-                                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Problemas técnicos</li>
-                                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Sugestões de melhorias</li>
-                                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Requisições de serviço</li>
-                                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Dúvidas gerais</li>
-                                        </ul>
-                                    </div>
+                                <div class="bg-light p-3 h-100">
+                                    <h4 class="mb-3">
+                                        <i class="fas fa-ticket-alt me-2 text-primary"></i>Tipos de Chamados
+                                    </h4>
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check-circle text-success me-2"></i>Problemas técnicos</li>
+                                        <li><i class="fas fa-check-circle text-success me-2"></i>Sugestões de melhorias</li>
+                                        <li><i class="fas fa-check-circle text-success me-2"></i>Requisições de serviço</li>
+                                        <li><i class="fas fa-check-circle text-success me-2"></i>Dúvidas gerais</li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
 
                         <?php if (!isset($_SESSION['user_id'])): ?>
                             <div class="text-center mt-5">
-                                <a href="views/auth/login.php" class="btn btn-primary btn-lg me-3 px-4 shadow-sm">
+                                <a href="views/auth/login.php" class="btn btn-primary me-3">
                                     <i class="fas fa-sign-in-alt me-2"></i>Login
                                 </a>
-                                <a href="views/auth/register.php" class="btn btn-outline-primary btn-lg px-4 shadow-sm">
+                                <a href="views/auth/register.php" class="btn btn-outline-primary">
                                     <i class="fas fa-user-plus me-2"></i>Cadastre-se
                                 </a>
                             </div>
@@ -107,18 +168,14 @@ session_start();
         </div>
     </main>
 
-    <footer class="bg-dark text-light py-4 mt-5">
-        <div class="container text-center">
-            <p class="mb-0"><i class="far fa-copyright me-1"></i> <?php echo date('Y'); ?> Sistema de Chamados TI - Prefeitura. Todos os direitos reservados.</p>
+    <footer>
+        <div class="container">
+            <p class="mb-0"><i class="far fa-copyright me-1"></i> <?php echo date('Y'); ?> Sistema de Chamados TI - Prefeitura</p>
         </div>
     </footer>
 
-    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JS -->
-    <script src="assets/js/main.js"></script>
 </body>
 
 </html>
