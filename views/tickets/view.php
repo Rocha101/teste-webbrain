@@ -184,6 +184,53 @@ try {
                                     </p>
                                 </div>
 
+                                <div>
+                                    <h5 class="text-primary">
+                                        <i class="fas fa-info-circle me-2"></i>Descrição
+                                    </h5>
+                                    <div class="bg-light p-3 rounded">
+                                        <?php echo $ticket['description']; ?>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4">
+                                    <h5 class="text-primary">
+                                        <i class="fas fa-user-friends me-2"></i>Contatos
+                                    </h5>
+                                    <?php if (!empty($contacts)): ?>
+                                        <ul class="list-group list-group-flush">
+                                            <?php foreach ($contacts as $contact): ?>
+                                                <li class="list-group-item">
+                                                    <div class="d-flex flex-column flex-md-row align-items-md-center">
+                                                        <i class="fas fa-user me-2"></i>
+                                                        <div class="flex-grow-1">
+                                                            <strong><?php echo htmlspecialchars($contact['contact_name'] ?? ''); ?></strong>
+                                                            <span class="text-muted ms-md-2">
+                                                                <?php echo htmlspecialchars($contact['contact_phone'] ?? ''); ?>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <!-- Observation -->
+                                                    <?php if (!empty($contact['observation'])): ?>
+                                                        <div class="mt-2">
+                                                            <small class="text-muted">
+                                                                <i class="fas fa-comment me-1"></i>
+                                                                <?php echo htmlspecialchars($contact['observation']); ?>
+                                                            </small>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                </li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                    <?php else: ?>
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            Nenhum contato disponível para este chamado.
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+
+
                                 <!-- Anexos -->
                                 <div class="mb-4">
                                     <h5 class="text-primary">
