@@ -9,15 +9,31 @@ try {
     $database = new Database();
     $db = $database->getConnection();
 
-    $stmt = $db->prepare("
-        SELECT t.*, 
-               (SELECT COUNT(*) FROM attachments WHERE ticket_id = t.id) as attachment_count,
-               (SELECT COUNT(*) FROM ticket_timeline WHERE ticket_id = t.id) as timeline_count
-        FROM tickets t
-        WHERE t.user_id = ?
-        ORDER BY t.created_at DESC
-    ");
-    $stmt->execute([$_SESSION['user_id']]);
+    $isAdmin = $_SESSION['is_admin'];
+
+    if ($isAdmin) {
+        // Query for admins: Fetch all tickets
+        $stmt = $db->prepare("
+            SELECT t.*, 
+                   (SELECT COUNT(*) FROM attachments WHERE ticket_id = t.id) as attachment_count,
+                   (SELECT COUNT(*) FROM ticket_timeline WHERE ticket_id = t.id) as timeline_count
+            FROM tickets t
+            ORDER BY t.created_at DESC
+        ");
+        $stmt->execute(); // No parameters needed since we're fetching all tickets
+    } else {
+        // Query for regular users: Fetch only their own tickets
+        $stmt = $db->prepare("
+            SELECT t.*, 
+                   (SELECT COUNT(*) FROM attachments WHERE ticket_id = t.id) as attachment_count,
+                   (SELECT COUNT(*) FROM ticket_timeline WHERE ticket_id = t.id) as timeline_count
+            FROM tickets t
+            WHERE t.user_id = ?
+            ORDER BY t.created_at DESC
+        ");
+        $stmt->execute([$_SESSION['user_id']]);
+    }
+
     $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     error_log($e->getMessage());
@@ -161,14 +177,24 @@ try {
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-lg-12">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h2 class="text-primary fw-bold fs-4">
-                            <i class="fas fa-ticket-alt me-2"></i>Meus Chamados
-                        </h2>
-                        <a href="new.php" class="btn btn-primary">
-                            <i class="fas fa-plus-circle me-2"></i>Novo Chamado
-                        </a>
-                    </div>
+
+                    <?php if ($isAdmin): ?>
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h2 class="text-primary fw-bold fs-4">
+                                <i class="fas fa-ticket-alt me-2"></i>Chamados
+                            </h2>
+                        </div>
+                    <?php else: ?>
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h2 class="text-primary fw-bold fs-4">
+                                <i class="fas fa-ticket-alt me-2"></i>Meus Chamados
+                            </h2>
+                            <a href="new.php" class="btn btn-primary">
+                                <i class="fas fa-plus-circle me-2"></i>Novo Chamado
+                            </a>
+                        </div>
+                    <?php endif; ?>
+
 
                     <?php if (isset($error)): ?>
                         <div class="alert alert-danger shadow-sm" role="alert">
@@ -179,8 +205,11 @@ try {
                             <div class="ticket-card">
                                 <div class="empty-state">
                                     <i class="fas fa-ticket-alt"></i>
-                                    <h4>Nenhum chamado encontrado</h4>
-                                    <p class="text-muted">Clique em "Novo Chamado" para começar.</p>
+                                    <?php if (!$isAdmin): ?>
+                                        <p class="mt-3">Crie um novo chamado clicando no botão acima</p>
+                                    <?php else: ?>
+                                        <p class="mt-3">Você ainda não possui chamados</p>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         <?php else: ?>
@@ -257,10 +286,17 @@ try {
                                                         <?php endif; ?>
                                                     </td>
                                                     <td class="text-center">
-                                                        <a href="view.php?id=<?php echo $ticket['id']; ?>"
-                                                            class="btn btn-sm btn-outline-primary">
-                                                            <i class="fas fa-eye me-1"></i> Ver
-                                                        </a>
+                                                        <?php if ($isAdmin): ?>
+                                                            <a href="view_admin.php?id=<?php echo $ticket['id']; ?>"
+                                                                class="btn btn-sm btn-outline-primary">
+                                                                <i class="fas fa-eye me-1"></i> Ver
+                                                            </a>
+                                                        <?php else: ?>
+                                                            <a href="view.php?id=<?php echo $ticket['id']; ?>"
+                                                                class="btn btn-sm btn-outline-primary">
+                                                                <i class="fas fa-eye me-1"></i> Ver
+                                                            </a>
+                                                        <?php endif; ?>
                                                     </td>
                                                 </tr>
                                             <?php endforeach; ?>

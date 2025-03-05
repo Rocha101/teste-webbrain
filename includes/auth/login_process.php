@@ -29,7 +29,7 @@ try {
     $database = new Database();
     $db = $database->getConnection();
 
-    $stmt = $db->prepare("SELECT id, password, email_verified FROM users WHERE email = ?");
+    $stmt = $db->prepare("SELECT id, password, email_verified, admin FROM users WHERE email = ?");
     $stmt->execute([$email]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -47,6 +47,7 @@ try {
 
     // Criar sessão
     $_SESSION['user_id'] = $user['id'];
+    $_SESSION['is_admin'] = $user['admin'];
     $_SESSION['last_activity'] = time();
 
     // Regenerar ID da sessão para prevenir fixação de sessão

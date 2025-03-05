@@ -15,6 +15,7 @@ CREATE TABLE users (
     state CHAR(2) NOT NULL,
     email_verified BOOLEAN DEFAULT FALSE,
     verification_code VARCHAR(6),
+    admin BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -64,3 +65,7 @@ CREATE TABLE ticket_timeline (
     FOREIGN KEY (ticket_id) REFERENCES tickets(id),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+-- Cria um usuário administrador
+INSERT INTO users (full_name, birth_date, email, phone, whatsapp, password, city, state, admin, email_verified)
+VALUES ('Administrador', '1990-01-01', 'admin@prefeitura.com', '99999999999', '99999999999', 'senhaprefeitura', 'Criciúma', 'SC', TRUE, TRUE);

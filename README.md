@@ -31,6 +31,11 @@ git clone [url-do-repositorio] teste-webbrain
 http://localhost/teste-webbrain/index.php
 ```
 
+## Usuario Admin
+
+Email: admin@prefeitura.com
+Senha: senhaprefeitura
+
 ## Funcionalidades
 
 - Sistema de autenticação completo

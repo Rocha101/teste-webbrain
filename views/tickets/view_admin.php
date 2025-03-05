@@ -5,6 +5,12 @@ require_once '../../config/database.php';
 session_start();
 redirectIfNotAuthenticated();
 
+// Restrict to admins only
+if (!isset($_SESSION['is_admin']) || !$_SESSION['is_admin']) {
+    header('Location: list.php'); // Redirect non-admins to their ticket list
+    exit;
+}
+
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     header('Location: list.php');
     exit;
@@ -16,13 +22,14 @@ try {
     $database = new Database();
     $db = $database->getConnection();
 
+    // Admins can view any ticket, no user_id restriction
     $stmt = $db->prepare("
         SELECT t.*, u.full_name as user_name
         FROM tickets t
         JOIN users u ON t.user_id = u.id
-        WHERE t.id = ? AND t.user_id = ?
+        WHERE t.id = ?
     ");
-    $stmt->execute([$ticket_id, $_SESSION['user_id']]);
+    $stmt->execute([$ticket_id]);
     $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$ticket) {
@@ -58,7 +65,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chamado #<?php echo $ticket_id; ?> - Sistema de Chamados</title>
+    <title>Chamado #<?php echo $ticket_id; ?> - Sistema de Chamados (Admin)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
@@ -137,7 +144,7 @@ try {
             font-weight: 500;
         }
 
-        .btn-outline-primary {
+        .btn-outline-primary, .btn-outline-danger {
             border-radius: 20px;
             padding: 0.3rem 1rem;
         }
@@ -170,14 +177,6 @@ try {
             padding: 0.75rem 1rem;
         }
 
-        .btn-outline-danger {
-            color: var(--danger);
-            border-color: var(--danger);
-            border-radius: 8px;
-            padding: 0.3rem 0.8rem;
-        }
-
-        /* Timeline Styles */
         .timeline {
             position: relative;
         }
@@ -194,11 +193,10 @@ try {
             border: 1px solid #e3e6f0;
         }
 
-        footer {
-            background-color: var(--dark);
-            color: #fff;
-            padding: 1.5rem 0;
-            text-align: center;
+        .status-select {
+            width: auto;
+            display: inline-block;
+            vertical-align: middle;
         }
 
         @media (max-width: 768px) {
@@ -216,22 +214,6 @@ try {
 
             h5 {
                 font-size: 1.1rem;
-            }
-
-            .timeline {
-                padding-left: 1.5rem;
-            }
-
-            .timeline::before {
-                left: 0.35rem;
-            }
-
-            .timeline-marker {
-                left: 0.1rem;
-            }
-
-            .timeline-content {
-                margin-left: 1rem;
             }
         }
     </style>
@@ -262,9 +244,13 @@ try {
                                             em <?php echo date('d/m/Y H:i', strtotime($ticket['created_at'])); ?>
                                         </small>
                                     </div>
-                                    <span class="badge <?php echo $ticket['status'] === 'aberto' ? 'bg-success' : ($ticket['status'] === 'em_andamento' ? 'bg-warning' : 'bg-secondary'); ?>">
-                                        <?php echo $ticket['status'] === 'aberto' ? 'Aberto' : ($ticket['status'] === 'em_andamento' ? 'Em Andamento' : 'Fechado'); ?>
-                                    </span>
+                                    <div>
+                                        <select id="statusSelect" class="form-select status-select" data-ticket-id="<?php echo $ticket_id; ?>">
+                                            <option value="aberto" <?php echo $ticket['status'] === 'aberto' ? 'selected' : ''; ?>>Aberto</option>
+                                            <option value="em_andamento" <?php echo $ticket['status'] === 'em_andamento' ? 'selected' : ''; ?>>Em Andamento</option>
+                                            <option value="fechado" <?php echo $ticket['status'] === 'fechado' ? 'selected' : ''; ?>>Fechado</option>
+                                        </select>
+                                    </div>
                                 </div>
 
                                 <div class="mb-4">
@@ -350,11 +336,11 @@ try {
 
                                 <div>
                                     <h5><i class="fas fa-plus-circle me-2"></i>Adicionar Atualização</h5>
-                                    <form id="updateForm" class="bg-light p-3 rounded" <?php echo $ticket['status'] === 'fechado' ? 'style="pointer-events: none; opacity: 0.6;"' : ''; ?>>
+                                    <form id="updateForm" class="bg-light p-3 rounded">
                                         <input type="hidden" name="csrf_token" value="<?php echo generateCSRFToken(); ?>">
                                         <input type="hidden" name="ticket_id" value="<?php echo $ticket_id; ?>">
                                         <div class="mb-3">
-                                            <textarea id="update_description" name="description" class="form-control" rows="3" required <?php echo $ticket['status'] === 'fechado' ? 'disabled' : ''; ?>></textarea>
+                                            <textarea id="update_description" name="description" class="form-control" rows="3" required></textarea>
                                         </div>
                                         <div class="mb-4">
                                             <label class="form-label">
@@ -362,7 +348,7 @@ try {
                                             </label>
                                             <div class="mb-3">
                                                 <input type="file" class="form-control" id="attachmentInput" name="attachments[]"
-                                                    multiple accept="image/*,.pdf,.doc,.docx,.txt" <?php echo $ticket['status'] === 'fechado' ? 'disabled' : ''; ?>>
+                                                    multiple accept="image/*,.pdf,.doc,.docx,.txt">
                                                 <div class="form-text">
                                                     <i class="fas fa-info-circle me-1"></i>
                                                     Você pode selecionar múltiplos arquivos de uma vez.
@@ -370,13 +356,8 @@ try {
                                             </div>
                                             <div id="attachmentList" class="list-group mb-3" style="display: none;"></div>
                                         </div>
-                                        <button type="submit" class="btn btn-primary" <?php echo $ticket['status'] === 'fechado' ? 'disabled' : ''; ?>>
-                                            <i class="fas fa-save me-2"></i>Adicionar
-                                        </button>
+                                        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Adicionar</button>
                                     </form>
-                                    <?php if ($ticket['status'] === 'fechado'): ?>
-                                        <small class="text-muted mt-2"><i class="fas fa-info-circle me-1"></i>Este chamado está fechado e não pode ser atualizado.</small>
-                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
@@ -490,6 +471,41 @@ try {
                         submitBtn.html('<i class="fas fa-save me-2"></i>Adicionar').prop('disabled', false);
                     }
                 });
+            });
+
+            $('#statusSelect').on('change', function() {
+                const newStatus = $(this).val();
+                const ticketId = $(this).data('ticket-id');
+                if (confirm(`Tem certeza que deseja alterar o status deste chamado para "${newStatus}"?`)) {
+                    const select = $(this);
+                    select.prop('disabled', true);
+
+                    $.ajax({
+                        url: '../../includes/tickets/update_status.php',
+                        type: 'POST',
+                        data: {
+                            ticket_id: ticketId,
+                            status: newStatus,
+                            csrf_token: '<?php echo generateCSRFToken(); ?>'
+                        },
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response.success) {
+                                location.reload();
+                            } else {
+                                alert(response.message);
+                                select.prop('disabled', false);
+                            }
+                        },
+                        error: function() {
+                            alert('Erro ao atualizar o status.');
+                            select.prop('disabled', false);
+                        }
+                    });
+                } else {
+                    // Revert to original status if canceled
+                    select.val('<?php echo $ticket['status']; ?>');
+                }
             });
         });
     </script>

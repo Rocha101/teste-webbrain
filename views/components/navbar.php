@@ -2,6 +2,8 @@
 if (!isset($_SESSION)) {
     session_start();
 }
+
+$isAdmin = $_SESSION['is_admin'] ?? false;
 ?>
 <style>
     :root {
@@ -12,6 +14,7 @@ if (!isset($_SESSION)) {
         font-family: 'Poppins', sans-serif;
         background-color: #f8f9fa;
     }
+
     /* Navbar Styles */
     .navbar {
         background-color: var(--primary);
@@ -55,12 +58,25 @@ if (!isset($_SESSION)) {
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
-                <?php if (isset($_SESSION['user_id'])): ?>
+                <?php if (isset($_SESSION['user_id']) and !$isAdmin): ?>
                     <li class="nav-item">
                         <a class="nav-link" href="/teste-webbrain/views/tickets/new.php"><i class="fas fa-plus-circle me-1"></i> Novo Chamado</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/teste-webbrain/views/tickets/list.php"><i class="fas fa-list me-1"></i> Meus Chamados</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/teste-webbrain/views/auth/logout.php">
+                            <i class="fas fa-sign-out-alt me-1"></i> Sair
+                        </a>
+                    </li>
+
+                <?php elseif (isset($_SESSION['user_id']) and $isAdmin): ?>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/teste-webbrain/views/tickets/list.php"><i class="fas fa-list me-1"></i> Chamados</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/teste-webbrain/views/users/list.php"><i class="fas fa-users me-1"></i> Usuários</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/teste-webbrain/views/auth/logout.php">
